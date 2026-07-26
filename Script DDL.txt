@@ -14,6 +14,7 @@ CREATE TABLE rol (
 
     CONSTRAINT uq_rol_nombre
         UNIQUE (nombre_rol)
+        
 ) ENGINE = InnoDB;
 
 CREATE TABLE usuario (
@@ -22,7 +23,7 @@ CREATE TABLE usuario (
     apellido VARCHAR(60) NOT NULL,
     email VARCHAR(120) NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
-    id_rol INT UNSIGNED NOT NULL,
+    id_rol INT UNSIGNED NOT NULL DEFAULT 1,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
     CONSTRAINT pk_usuario
@@ -125,3 +126,5 @@ CREATE TABLE incidencia (
         ON UPDATE CASCADE
         ON DELETE SET NULL
 ) ENGINE = InnoDB;
+
+USE gestion_residuos;
