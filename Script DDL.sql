@@ -104,6 +104,7 @@ CREATE TABLE incidencia (
     id_usuario INT UNSIGNED NOT NULL,
     id_contenedor INT UNSIGNED NOT NULL,
     id_camion INT UNSIGNED NULL,
+    id_usuario_cuadrilla INT UNSIGNED NULL,
 
     CONSTRAINT pk_incidencia
         PRIMARY KEY (id_incidencia),
@@ -124,7 +125,88 @@ CREATE TABLE incidencia (
         FOREIGN KEY (id_camion)
         REFERENCES camion (id_camion)
         ON UPDATE CASCADE
-        ON DELETE SET NULL
+        ON DELETE SET NULL,
+        
+	CONSTRAINT fk_incidencia_cuadrilla 
+    FOREIGN KEY (id_usuario_cuadrilla)
+    REFERENCES usuario (id_usuario)
+    ON UPDATE CASCADE 
+    ON DELETE SET NULL
+    
 ) ENGINE = InnoDB;
 
-USE gestion_residuos;
+CREATE TABLE centro_acopio (
+    id_centro INT UNSIGNED AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    ubicacion VARCHAR(180) NOT NULL,
+    capacidad_total DECIMAL(10,2) NOT NULL,
+    ocupacion_actual DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    tipo_residuo VARCHAR(100) NOT NULL,
+
+    CONSTRAINT pk_centro_acopio
+        PRIMARY KEY (id_centro),
+
+    CONSTRAINT chk_centro_capacidad
+        CHECK (capacidad_total > 0),
+
+    CONSTRAINT chk_centro_ocupacion
+        CHECK (
+            ocupacion_actual >= 0
+            AND ocupacion_actual <= capacidad_total
+)
+) ENGINE = InnoDB;
+
+CREATE TABLE maquinaria (
+    id_maquinaria INT UNSIGNED AUTO_INCREMENT,
+    tipo VARCHAR(100) NOT NULL,
+    estado VARCHAR(30) NOT NULL DEFAULT 'disponible',
+    fecha_ultimo_mantenimiento DATE NULL,
+    id_centro INT UNSIGNED NOT NULL,
+
+    CONSTRAINT pk_maquinaria
+        PRIMARY KEY (id_maquinaria),
+
+    CONSTRAINT fk_maquinaria_centro
+        FOREIGN KEY (id_centro)
+        REFERENCES centro_acopio (id_centro)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT chk_maquinaria_estado
+        CHECK (
+            estado IN (
+                'disponible',
+                'en_uso',
+                'mantenimiento',
+                'fuera_de_servicio'
+)
+)
+) ENGINE = InnoDB;
+
+CREATE TABLE ruta (
+    id_ruta INT UNSIGNED AUTO_INCREMENT,
+    num_ruta INT UNSIGNED NOT NULL,
+    zona VARCHAR(100) NOT NULL,
+    recorrido VARCHAR(255) NOT NULL,
+    id_camion INT UNSIGNED NOT NULL,
+    id_usuario_cuadrilla INT UNSIGNED NOT NULL,
+
+    CONSTRAINT pk_ruta
+        PRIMARY KEY (id_ruta),
+
+    CONSTRAINT uq_ruta_numero
+        UNIQUE (num_ruta),
+
+    CONSTRAINT fk_ruta_camion
+        FOREIGN KEY (id_camion)
+        REFERENCES camion (id_camion)
+        ON UPDATE CASCADE
+ON DELETE RESTRICT,
+
+    CONSTRAINT fk_ruta_cuadrilla
+        FOREIGN KEY (id_usuario_cuadrilla)
+        REFERENCES usuario (id_usuario)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+) ENGINE = InnoDB;
+
